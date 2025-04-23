@@ -1,7 +1,11 @@
 from matrix import Matrix
 
-#вычисляет среднеквадратичную ошибку между X_orig и X_recon
+# Вычисляет среднеквадратичную ошибку между X_orig и X_recon
 def reconstruction_error(X_orig: Matrix, X_recon: Matrix) -> float:
+    # Проверка размеров
+    if X_orig.rows != X_recon.rows or X_orig.cols != X_recon.cols:
+        raise ValueError("Размеры матриц X_orig и X_recon не совпадают")
+
     n = X_orig.rows
     m = X_orig.cols
 
@@ -12,3 +16,4 @@ def reconstruction_error(X_orig: Matrix, X_recon: Matrix) -> float:
             total += diff ** 2
 
     return total / (n * m)
+

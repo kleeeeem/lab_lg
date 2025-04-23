@@ -112,11 +112,63 @@ def gauss_solver_with_general_solution(A: Matrix, b: Matrix) -> Union[str, List[
     return result
 
 #красивый вывод решения в формате вектора 
-def print_solution_as_latex(A: Matrix, b: Matrix):
+def print_solution_as_vector_form(A: Matrix, b: Matrix):
     result = gauss_solver_with_general_solution(A, b)
     if isinstance(result, str):
         print(result)
         return
+
+    lines = result.strip().split("\n")
+    m = len(lines)
+
+    const = []
+    param_vectors = {}
+
+    for line in lines:
+        parts = line.split("=")
+        expr = parts[1].strip()
+        tokens = expr.split()
+
+        value = 0.0
+        terms = {}
+        i = 0
+        while i < len(tokens):
+            token = tokens[i]
+            if token.replace('.', '', 1).replace('-', '', 1).isdigit():
+                number = float(token)
+                if i == 0:
+                    value = number
+                else:
+                    sign = -1 if tokens[i - 1] == "-" else 1
+                    var = tokens[i + 1]
+                    terms[var] = sign * number
+                    i += 1
+            i += 1
+
+        const.append(value)
+        for param in terms:
+            if param not in param_vectors:
+                param_vectors[param] = [0.0] * m
+            param_vectors[param][len(const)-1] = terms[param]
+
+    # Печатаем как LaTeX-вектора
+    print("\nОбщее решение в векторной форме:")
+    print("x =")
+    print("\\[")
+    print("\\begin{bmatrix}")
+    for i in range(m):
+        end = " \\\\" if i < m - 1 else ""
+        print(f"{const[i]:6.2f}{end}")
+    print("\\end{bmatrix}", end="")
+
+    for param in sorted(param_vectors):
+        print(f" + {param} \\cdot \\begin{{bmatrix}}")
+        for i in range(m):
+            end = " \\\\" if i < m - 1 else ""
+            print(f"{param_vectors[param][i]:6.2f}{end}")
+        print("\\end{bmatrix}", end="")
+
+    print("\n\\]")
 
     lines = result.strip().split("\n")
     m = len(lines)

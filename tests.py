@@ -6,8 +6,8 @@ from eigen import find_eigenvalues
 from eigenvectors import find_eigenvectors
 from explained import explained_variance_ratio
 from pca import pca
-#from visualize import plot_pca_projection
-#from matplotlib.figure import Figure
+from visualize import plot_pca_projection
+from matplotlib.figure import Figure
 from reconstruction import reconstruction_error
 
 # Тесты для метода Гаусса
@@ -175,9 +175,9 @@ def test_eigenvalues():
         expected = test["expected"]
 
         # Проверка: у найденных значений разница с ожидаемыми < 1e-3
-        passed = all(
-            any(abs(ev - f) < 1e-3 for f in found)
-            for ev in expected
+        passed = (
+                all(any(abs(ev - f) < 1e-3 for f in found) for ev in expected) and
+                all(any(abs(ev - f) < 1e-3 for ev in expected) for f in found)
         )
         print(f"{test['name']}: {'✅ Passed' if passed else f'❌ Failed (найдено: {found})'}")
 
@@ -284,29 +284,6 @@ def test_pca():
         if not correct_ratio:
             print(f"   - Неверное значение γ: {gamma}")
 
-# Тесты для визуализации
-#def test_plot_pca_projection():
-#    print("\n=== РЕЗУЛЬТАТЫ АВТОТЕСТА ДЛЯ ВИЗУАЛИЗАЦИИ PCA ===")
-#
-#    try:
-#        #создаём простую 2D-проекцию вручную (матрица 3×2)
-#        X_proj = Matrix([
-#            [1.0, 2.0],
-#            [2.0, 3.0],
-#            [3.0, 4.0]
-#        ])
-
-        #пытаемся построить график
-#        fig = plot_pca_projection(X_proj)
-
-        #проверяем тип
-#        if isinstance(fig, Figure):
-#            print("✅ Passed: график успешно построен")
-#        else:
-#            print("❌ Failed: результат — не объект Figure")
-
-#    except Exception as e:
-#        print(f"❌ Failed: произошла ошибка при построении графика — {e}")
 
 #mse
 def test_reconstruction_error():
@@ -340,3 +317,28 @@ def test_reconstruction_error():
 
         passed = abs(result - test["expected"]) < 1e-6
         print(f"{test['name']}: {'✅ Passed' if passed else f'❌ Failed (MSE = ' + str(result) + ')'}")
+
+# ТЕсты для визуализации
+def test_plot_pca_projection():
+    print("\n=== РЕЗУЛЬТАТЫ АВТОТЕСТА ДЛЯ ВИЗУАЛИЗАЦИИ PCA ===")
+
+    try:
+        # Создаём простую матрицу проекций (3 строки, 2 компоненты)
+        X_proj = Matrix([
+            [1.0, 2.0],
+            [2.0, 3.0],
+            [3.0, 4.0]
+        ])
+
+        # Пытаемся построить график
+        fig = plot_pca_projection(X_proj)
+
+        # Проверяем тип
+        if isinstance(fig, Figure):
+            print("✅ Passed: график успешно построен")
+            fig.show()  # Открываем окно с графиком
+        else:
+            print("❌ Failed: результат — не объект Figure")
+
+    except Exception as e:
+        print(f"❌ Failed: произошла ошибка при построении графика — {e}")

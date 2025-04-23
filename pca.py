@@ -5,6 +5,8 @@ from covariance import covariance_matrix
 from eigen import find_eigenvalues
 from eigenvectors import find_eigenvectors
 from explained import explained_variance_ratio
+from autok import auto_select_k
+
 
 #реализация полного PCA
 def pca(X: Matrix, k: int) -> Tuple[Matrix, float]:
@@ -25,7 +27,15 @@ def pca(X: Matrix, k: int) -> Tuple[Matrix, float]:
 
     # 3. Находим собственные значения и векторы
     eigenvalues = find_eigenvalues(C)
+
+    # Если k = -1 — выбираем его автоматически
+    if k == -1:
+        k = auto_select_k(eigenvalues, threshold=0.95)
+
+
     eigenvectors = find_eigenvectors(C, eigenvalues)
+
+    # Проверка: хватит ли векторов
     if len(eigenvectors) < k:
         print(f"⚠️ Недостаточно собственных векторов для k = {k}")
         return Matrix([]), 0.0

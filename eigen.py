@@ -60,4 +60,10 @@ def find_eigenvalues(C: Matrix, tol: float = 1e-6) -> list:
                     det1 = det_mid
             eigenvalues.append(round((x1 + x2) / 2, 6))
 
-    return eigenvalues
+    # Удаляем близкие повторяющиеся значения (если разница < tol)
+    unique_eigenvalues = []
+    for val in eigenvalues:
+        if all(abs(val - u) > tol for u in unique_eigenvalues):
+            unique_eigenvalues.append(val)
+
+    return unique_eigenvalues

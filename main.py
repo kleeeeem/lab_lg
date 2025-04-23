@@ -1,16 +1,22 @@
 from typing import List
 from matrix import Matrix
-from gauss import gauss_solver_with_general_solution, print_solution_as_latex
+from gauss import gauss_solver_with_general_solution, print_solution_as_vector_form
 from center import center_data
 from covariance import covariance_matrix
 from eigen import find_eigenvalues
 from eigenvectors import find_eigenvectors
 from explained import explained_variance_ratio
 from pca import pca
-#from visualize import plot_pca_projection
+from visualize import plot_pca_projection
 from reconstruction import reconstruction_error
+import matplotlib
+matplotlib.use('TkAgg')
+from missing import handle_missing_values
+from noise import add_noise_and_compare
+from real_pca import apply_pca_to_dataset
 
-from tests import run_tests, test_center_data, test_covariance_matrix, test_eigenvalues, test_eigenvectors, test_explained_variance, test_pca, test_reconstruction_error
+
+from tests import run_tests, test_center_data, test_covariance_matrix, test_eigenvalues, test_eigenvectors, test_explained_variance, test_pca, test_reconstruction_error, test_plot_pca_projection
 
 # === Ввод матрицы с клавиатуры ===
 def input_matrix_from_keyboard_safe():
@@ -53,9 +59,15 @@ def input_matrix_from_keyboard_safe():
 #вводим A и b
 A, b = input_matrix_from_keyboard_safe()
 
+# обрабатываем пропущенные значения (NaN)
+A = handle_missing_values(A)
+
 #выводим решение СЛАУ
 print("\n=== РЕШЕНИЕ СЛАУ (метод Гаусса) ===")
-print_solution_as_latex(A, b)
+print_solution_as_vector_form(A, b)
+
+
+
 
 #центрирование
 X_centered = center_data(A)
@@ -88,7 +100,7 @@ for k in range(1, len(eigenvalues)+1):
 
 #рса
 print("\n=== PCA ===")
-X_proj, gamma = pca(A, k=1)
+X_proj, gamma = pca(A, k=-1)
 print("Проекция данных (X_proj):")
 print(X_proj)
 print(f"Доля объяснённой дисперсии γ: {gamma:.4f}")
@@ -122,11 +134,16 @@ def reconstruct_data(X_proj: Matrix, W: Matrix, means: List[float]) -> Matrix:
 
 
 #визуализация проекции
-#if X_proj.cols >= 2:
-#    fig = plot_pca_projection(X_proj)
-#    fig.show()  # открывает окно с графиком
-#else:
-#    print("⚠️ Нельзя построить график — нужно хотя бы 2 компоненты.")
+try:
+    if X_proj.cols >= 2:
+        fig = plot_pca_projection(X_proj)
+        fig.savefig("pca_projection.png")  # сохраняем график в файл
+        fig.show()
+        print("✅ График сохранён как 'pca_projection.png'")
+    else:
+        print("⚠️ Нельзя построить график — нужно хотя бы 2 компоненты.")
+except Exception as e:
+    print(f"❌ Ошибка при построении графика: {e}")
 
 # Средние значения по признакам
 means = [sum(A[i][j] for i in range(A.rows)) / A.rows for j in range(A.cols)]
@@ -154,6 +171,12 @@ else:
     mse = reconstruction_error(A, X_reconstructed)
     print(f"\nMSE восстановления: {mse:.6f}")
 
+print("\n=== ЭКСПЕРИМЕНТ: Влияние шума на PCA ===")
+add_noise_and_compare(A, noise_level=0.1) #можно менять noise_level (0.01, 0.5, 1.0), что поиграться с разными уровнями шума
+
+print("\n=== PCA НА ВСТРОЕННОМ ДАТАСЕТЕ ===")
+apply_pca_to_dataset("wine", k=2)
+
 #запуск тестов
 print("\n=== АВТОТЕСТЫ ===")
 run_tests()
@@ -163,5 +186,5 @@ test_eigenvalues()
 test_eigenvectors()
 test_explained_variance()
 test_pca()
-#test_plot_pca_projection()
+test_plot_pca_projection()
 test_reconstruction_error()

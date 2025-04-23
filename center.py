@@ -5,6 +5,8 @@ def center_data(X: Matrix) -> Matrix:
     #получаем размеры матрицы
     n = X.rows
     m = X.cols
+    if n == 0:
+        raise ValueError("Центрирование невозможно: матрица не содержит строк")
     #считаем среднее значение по каждому столбцу
     means = []
     for j in range(m):
